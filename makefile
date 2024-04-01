@@ -9,30 +9,30 @@ OUTDIR = ./output
 # 引数から受け取ったBrainfuckファイル
 BF_FILE ?= ./target/m.bf
 
-C_FILE = $(OUTDIR)/$(notdir $(BF_FILE:.bf=.c))
-EXE_FILE = $(OUTDIR)/$(notdir $(BF_FILE:.bf=))
+# アセンブリファイル名
+ASM_FILE = $(OUTDIR)/m.s
 
-# デフォルトターゲット
-all: bf2c $(EXE_FILE)
+# オブジェクトファイル名
+OBJ_FILE = $(ASM_FILE:.s=.o)
 
-# Brainfuckコンパイラ（bf_compiler）のビルド
-bf2c: main.c
-	$(CC) $(CFLAGS) -o main main.c
+# 実行ファイル名
+EXEC_FILE = $(OUTDIR)/m
 
-# BrainfuckファイルからCファイルへの変換
-$(C_FILE): $(BF_FILE) bf2c
-	mkdir -p $(OUTDIR)
-	$(BFC) < $(BF_FILE) > $(C_FILE)
+.PHONY: asm build run clean
 
-# Cファイルから実行ファイルへのコンパイル
-$(EXE_FILE): $(C_FILE)
-	$(CC) $(CFLAGS) -o $(EXE_FILE) $(C_FILE)
+# Brainfuckファイルからアセンブリファイルを生成
+asm:
+	$(BFC) < $(BF_FILE) > $(ASM_FILE)
 
-# 実行
-run: $(EXE_FILE)
-	$(EXE_FILE)
+# アセンブリファイルをコンパイルして実行ファイルを生成
+build: asm
+	nasm -f elf64 $(ASM_FILE) -o $(OBJ_FILE)
+	ld -o $(EXEC_FILE) $(OBJ_FILE)
 
-# クリーンアップ
+# 実行ファイルを実行
+run: build
+	$(EXEC_FILE)
+
+# 出力ファイルをクリーンアップ
 clean:
-	rm -f bf_compiler
-	rm -rf $(OUTDIR)
+	rm -f $(ASM_FILE) $(OBJ_FILE) $(EXEC_FILE)

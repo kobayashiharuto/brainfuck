@@ -1,78 +1,84 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
-int main(int argc, char **argv) {
-    char array[30000] = {0};
-    char *ptr = array;
+#define MAX_STACK 256
 
-    // BrainfuckプログラムをCコードに変換して出力する
-    printf("#include <stdio.h>\n");
-    printf("#include <time.h>\n\n");
-    printf("int main() {\n");
-    printf("    clock_t start, end;\n");
-    printf("    double cpu_time_used;\n");
-    printf("    start = clock();\n\n");
-    printf("    char array[30000] = {0};\n");
-    printf("    char *ptr = array;\n");
-    
-    int c, count;
+int stack[MAX_STACK];
+int top = -1;
+
+void push(int value) {
+    if (top >= (MAX_STACK - 1)) {
+        printf("Stack Overflow\n");
+    } else {
+        stack[++top] = value;
+    }
+}
+
+int pop() {
+    if (top < 0) {
+        printf("Stack Underflow\n");
+        return -1;
+    } else {
+        return stack[top--];
+    }
+}
+
+int main() {
+    printf("section .bss\n");
+    printf("array resb 30000\n");
+    printf("section .text\n");
+    printf("global _start\n");
+    printf("_start:\n");
+    printf("    mov rsi, array\n");
+
+    int c;
+    int loop_counter = 0;
+
     while ((c = getchar()) != EOF) {
-
-        // [-] パターンが見つかった場合、ポインタが指す値を0に設定
-        if (c == '[') {
-            c = getchar();
-            if (c == '-') {
-                c = getchar();
-                if (c == ']') {
-                    printf("    *ptr = 0;\n");
-                    continue;
-                }
-                ungetc(c, stdin);
-                c = '-';
-            }
-            ungetc(c, stdin);
-            c = '[';
-        }
-
-        // 通常変換
         switch (c) {
             case '>':
-                // 連続している場合はまとめる
-                for (count = 1; (c = getchar()) == '>'; ++count);
-                ungetc(c, stdin);
-                printf("    ptr += %d;\n", count);
+                printf("    inc rsi\n");
                 break;
             case '<':
-                // 連続している場合はまとめる
-                for (count = 1; (c = getchar()) == '<'; ++count);
-                ungetc(c, stdin);
-                printf("    ptr -= %d;\n", count);
+                printf("    dec rsi\n");
                 break;
             case '+':
-                // 連続している場合はまとめる
-                for (count = 1; (c = getchar()) == '+'; ++count);
-                ungetc(c, stdin);
-                printf("    *ptr += %d;\n", count);
+                printf("    inc byte [rsi]\n");
                 break;
             case '-':
-                // 連続している場合はまとめる
-                for (count = 1; (c = getchar()) == '-'; ++count);
-                ungetc(c, stdin);
-                printf("    *ptr -= %d;\n", count);
+                printf("    dec byte [rsi]\n");
                 break;
-            case '.': printf("    putchar(*ptr);\n"); break;
-            case ',': printf("    *ptr = getchar();\n"); break;
-            case '[': printf("    while (*ptr) {\n"); break;
-            case ']': printf("    }\n"); break;
+            case '.':
+                printf("    mov rax, 1\n");
+                printf("    mov rdi, 1\n");
+                printf("    mov rdx, 1\n");
+                printf("    syscall\n");
+                break;
+            case ',':
+                printf("    mov rax, 0\n");
+                printf("    mov rdi, 0\n");
+                printf("    mov rdx, 1\n");
+                printf("    syscall\n");
+                break;
+            case '[':
+                push(loop_counter);
+                printf("loop_start_%d:\n", loop_counter);
+                printf("    cmp byte [rsi], 0\n");
+                printf("    je loop_end_%d\n", loop_counter);
+                loop_counter++;
+                break;
+            case ']':
+                if (top >= 0) {
+                    int start_loop = pop();
+                    printf("    jmp loop_start_%d\n", start_loop);
+                    printf("loop_end_%d:\n", start_loop);
+                }
+                break;
         }
     }
-    
-    // 実行時間計測終了と結果の出力
-    printf("\n    end = clock();\n");
-    printf("    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;\n");
-    printf("    printf(\"Execution Time: %%f seconds\\n\", cpu_time_used);\n");
-    printf("    return 0;\n");
-    printf("}\n");
+
+    printf("    mov rax, 60\n");
+    printf("    xor rdi, rdi\n");
+    printf("    syscall\n");
+
     return 0;
 }
