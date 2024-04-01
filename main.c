@@ -30,22 +30,30 @@ int main() {
     printf("_start:\n");
     printf("    mov rsi, array\n");
 
-    int c;
+    int c, count;
     int loop_counter = 0;
 
     while ((c = getchar()) != EOF) {
         switch (c) {
             case '>':
-                printf("    inc rsi\n");
+                for (count = 1; (c = getchar()) == '>'; ++count);
+                ungetc(c, stdin);
+                printf("    add rsi, %d\n", count);
                 break;
             case '<':
-                printf("    dec rsi\n");
+                for (count = 1; (c = getchar()) == '<'; ++count);
+                ungetc(c, stdin);
+                printf("    sub rsi, %d\n", count);
                 break;
             case '+':
-                printf("    inc byte [rsi]\n");
+                for (count = 1; (c = getchar()) == '+'; ++count);
+                ungetc(c, stdin);
+                printf("    add byte [rsi], %d\n", count);
                 break;
             case '-':
-                printf("    dec byte [rsi]\n");
+                for (count = 1; (c = getchar()) == '-'; ++count);
+                ungetc(c, stdin);
+                printf("    sub byte [rsi], %d\n", count);
                 break;
             case '.':
                 printf("    mov rax, 1\n");

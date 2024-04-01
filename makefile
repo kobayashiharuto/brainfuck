@@ -1,6 +1,6 @@
 # コンパイラ設定
 CC = gcc
-CFLAGS = -Ofast -march=native -flto
+CFLAGS = -O1
 BFC = ./main
 
 # 出力ディレクトリ
