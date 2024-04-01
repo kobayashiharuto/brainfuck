@@ -16,13 +16,29 @@ int main(int argc, char **argv) {
     printf("    char array[30000] = {0};\n");
     printf("    char *ptr = array;\n");
     
-    int c;
+    int c, count;
     while ((c = getchar()) != EOF) {
         switch (c) {
-            case '>': printf("    ++ptr;\n"); break;
-            case '<': printf("    --ptr;\n"); break;
-            case '+': printf("    ++*ptr;\n"); break;
-            case '-': printf("    --*ptr;\n"); break;
+            case '>':
+                for (count = 1; (c = getchar()) == '>'; ++count);
+                ungetc(c, stdin); // 最後に読み込んだ文字をストリームに戻す
+                printf("    ptr += %d;\n", count);
+                break;
+            case '<':
+                for (count = 1; (c = getchar()) == '<'; ++count);
+                ungetc(c, stdin); // 最後に読み込んだ文字をストリームに戻す
+                printf("    ptr -= %d;\n", count);
+                break;
+            case '+':
+                for (count = 1; (c = getchar()) == '+'; ++count);
+                ungetc(c, stdin);
+                printf("    *ptr += %d;\n", count);
+                break;
+            case '-':
+                for (count = 1; (c = getchar()) == '-'; ++count);
+                ungetc(c, stdin);
+                printf("    *ptr -= %d;\n", count);
+                break;
             case '.': printf("    putchar(*ptr);\n"); break;
             case ',': printf("    *ptr = getchar();\n"); break;
             case '[': printf("    while (*ptr) {\n"); break;
