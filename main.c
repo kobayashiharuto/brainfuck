@@ -18,23 +18,45 @@ int main(int argc, char **argv) {
     
     int c, count;
     while ((c = getchar()) != EOF) {
+
+        // [-] パターンが見つかった場合、ポインタが指す値を0に設定
+        if (c == '[') {
+            c = getchar();
+            if (c == '-') {
+                c = getchar();
+                if (c == ']') {
+                    printf("    *ptr = 0;\n");
+                    continue;
+                }
+                ungetc(c, stdin);
+                c = '-';
+            }
+            ungetc(c, stdin);
+            c = '[';
+        }
+
+        // 通常変換
         switch (c) {
             case '>':
+                // 連続している場合はまとめる
                 for (count = 1; (c = getchar()) == '>'; ++count);
-                ungetc(c, stdin); // 最後に読み込んだ文字をストリームに戻す
+                ungetc(c, stdin);
                 printf("    ptr += %d;\n", count);
                 break;
             case '<':
+                // 連続している場合はまとめる
                 for (count = 1; (c = getchar()) == '<'; ++count);
-                ungetc(c, stdin); // 最後に読み込んだ文字をストリームに戻す
+                ungetc(c, stdin);
                 printf("    ptr -= %d;\n", count);
                 break;
             case '+':
+                // 連続している場合はまとめる
                 for (count = 1; (c = getchar()) == '+'; ++count);
                 ungetc(c, stdin);
                 printf("    *ptr += %d;\n", count);
                 break;
             case '-':
+                // 連続している場合はまとめる
                 for (count = 1; (c = getchar()) == '-'; ++count);
                 ungetc(c, stdin);
                 printf("    *ptr -= %d;\n", count);
